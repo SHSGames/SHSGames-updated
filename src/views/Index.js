@@ -1,7 +1,6 @@
 import React, { Fragment } from "react";
 
 import { Container } from "@photoncss/Layout";
-import SearchBar from "components/SearchBar";
 import Toolbar from "components/Toolbar";
 
 // Export the path of the page to render
@@ -15,9 +14,7 @@ export function View() {
 			<Toolbar/>
 
 			<Container>
-
-				<SearchBar/>
-
+			
 				get started by editing `src/views/Index.js::View`
 
 			</Container>
