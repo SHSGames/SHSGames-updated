@@ -5,7 +5,7 @@ import { Icon } from "@photoncss/Icon";
 export default function Component({ children = false }) {
 	return (
 		<Fragment>
-			<Toolbar position="fixed" elevate color="white text-black">
+			<Toolbar position="fixed" elevate>
 				<Icon onClick={ () => Photon.Drawer("#drawer").open() }>menu</Icon>
 				{ children ? <ToolbarTitle subtitle="SHS Games">{children}</ToolbarTitle> : <ToolbarTitle>SHS Games</ToolbarTitle> }
 			</Toolbar>

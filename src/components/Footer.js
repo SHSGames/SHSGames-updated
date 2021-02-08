@@ -24,7 +24,7 @@ export function MoTD() {
 
 export default function Component() {
 	return (
-		<Footer variant="legacy dark">
+		<Footer>
 			<Container>
 				<Row>
 					<Col md={4}>
@@ -33,7 +33,7 @@ export default function Component() {
 					</Col>
 					<Col md={8}>
 						<div style={{ float: "right" }}>
-							<DiscordInvite guild="584437072618717209"/>
+							<DiscordInvite guild="584437072618717209" palette={Photon.getTheme().theme}/>
 						</div>
 					</Col>
 				</Row>

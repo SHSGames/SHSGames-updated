@@ -18,7 +18,7 @@ export default function({ palette = "dark", guild = "YPmMwGQ" }) {
 	if(state.success === false || state.success === null) return null;
 
     return (
-		<div className={`DiscordInvite-root palette-${palette}`}>
+		<div className={`DiscordInvite-root raised-2 palette-${palette}`}>
 	        <h5 className="DiscordInvite-title">
 	            You received an invite to a server
 	        </h5>
