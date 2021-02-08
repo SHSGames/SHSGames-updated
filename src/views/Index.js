@@ -1,5 +1,6 @@
 import React, { Fragment } from "react";
 import Toolbar from "components/Toolbar";
+import { Container } from "@photoncss/Layout";
 
 // Export the path of the page to render
 export const route = "/";
@@ -11,7 +12,12 @@ export function View() {
 
 			<Toolbar/>
 
-			get started by editing `src/views/Index.js::View`
+			<Container>
+
+				get started by editing `src/views/Index.js::View`
+
+			</Container>
+
 		</Fragment>
 	)
 }
