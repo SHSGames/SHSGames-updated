@@ -9,6 +9,8 @@ let ROUTES = [];
 const importAll = a => a.keys().forEach(k => ROUTES.push(a(k)));
 importAll(require.context("../views", true, /\.js$/));
 
+import Footer from "components/Footer";
+
 // Create root component
 class Root extends React.Component {
 
@@ -33,6 +35,7 @@ class Root extends React.Component {
 				<main>
 					{ ROUTES.map(({ route, View }, key) => <Route key={key} path={route} exact={true} component={View}/> ) }
 				</main>
+				<Footer/>
 			</Router>
         );
 
