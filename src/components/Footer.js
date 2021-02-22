@@ -40,12 +40,19 @@ export default function Component() {
 			</Container>
 			<FooterCopyright>
 				<Container style={{ paddingLeft: 12 }}>
-					Copyright © 2019 - { new Date().getFullYear() }{" • "}
+				
+					Copyright © 2019 - { new Date().getFullYear() }
+					{" • "}
+					<a href="//github.com/SHSGames/SHSGames/blob/master/LICENSE" className="link">Liscense</a>
+
+					<br/>
+
 					<a href="//joshmerlino.github.io" className="link">Josh Merlino</a>
 					{" & "}
 					<a href="//th3skeleton.github.io/pshel" className="link">Parker Sheldon</a>
 					{" & "}
 					<a className="link">George Lock</a>
+
 				</Container>
 			</FooterCopyright>
 		</Footer>
