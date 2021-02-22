@@ -1,6 +1,7 @@
 // Import React
 import React from "react";
 import { render } from "react-dom";
+import YAML from "yaml";
 
 // Import app stylesheet
 import "./index.less";
@@ -66,3 +67,6 @@ if(location.hostname !== "localhost") {
 		}
 	}).catch(e => console.error("Offline", e));
 }
+
+// Get games
+app.games = YAML.parse(require("raw-loader!../games.yml").default);
