@@ -1,23 +1,67 @@
-// Import React
-import React from "react";
+import React, { useEffect } from "react";
 import { render } from "react-dom";
-import YAML from "yaml";
-
-// Import app stylesheet
-import "./index.less";
-
-// Import jQuery
+import { BrowserRouter, HashRouter, Route } from "react-router-dom";
+import * as OfflinePluginRuntime from "offline-plugin/runtime";
+import "./styles/main.less";
 import "script-loader!jquery";
-
-// Import PhotonCSS
 import "photoncss";
+import "./app";
 
-// Register a static asset caching service-worker
-if((location.protocol === "https:" || location.hostname === "localhost") && location.port === "" && "serviceWorker" in navigator)
-  navigator.serviceWorker.register("/service-worker.js");
+// Get right router type for app
+const Router = location.protocol === "file:" ? HashRouter : BrowserRouter;
 
-// Import root component
-import Root from "components/Root";
+// Import all views
+const views = [];
+const importAll = a => a.keys().forEach(k => views.push(a(k)));
+importAll(require.context("./views", true, /\.js$/));
+
+// Root component
+function Root() {
+
+	// On mount
+	useEffect(function() {
+
+		// Initialize route
+		let route = "";
+		(function loop() {
+
+			// Run again on next fraome
+			requestAnimationFrame(loop);
+
+			// If route/page was changed
+			if(route !== app.getRoute()) {
+
+				// Change route cache
+				route = app.getRoute();
+
+				// Reset scroll and reload Photon
+				$(window).scrollTop(0);
+				Photon.reload();
+
+				// Get view
+				let view = views.filter(({ route }) => new RegExp(route.replace(/\:\w.*/g, "\\w.*"), "g").test(app.getRoute()));
+					view = view.length > 1 ? view[view[0].route === "/" ? 1:0] : view[0];
+
+				// Get title from route
+				const title = view.hasOwnProperty("title") ? `${view.title} • ${APP_MANIFEST.name}` : APP_MANIFEST.name;
+
+				// Set new title
+				document.title = title;
+
+			}
+		}());
+	});
+
+	// Render router
+	return (
+		<Router>
+			<main>
+				{ views.map(({ route, View, default: def }, key) => <Route key={key} path={route} exact={true} component={def || View}/> ) }
+			</main>
+		</Router>
+  	);
+
+}
 
 // Wait for the DOM to load before rendering
 document.addEventListener("DOMContentLoaded", function() {
@@ -32,40 +76,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
-// Create global `app` definition
-global.app = {};
+// If is running in production
+if(PRODUCTION) {
 
-// Resolve assets from the static folder
-app.static = asset => require(`./static/${asset}`).default;
+	// Register a static asset caching service-worker
+	OfflinePluginRuntime.install();
 
-// Get current route
-app.getRoute = () => location.protocol === "file:" ? (location.href.split("#")[1] || "/") : location.pathname;
+	// Get client version
+	const client = require("raw-loader!../hash").default;
 
-// Add API request system
-app.api = (path, data = {}) => new Promise(function(resolve, reject) {
-	fetch(`/api/${path}`, {
-		method: "POST",
-		mode: "cors",
-	    cache: "no-cache",
-	    credentials: "same-origin",
-	    headers: { "Content-Type": "application/json" },
-	    redirect: "follow",
-	    referrerPolicy: "no-referrer",
-		body: JSON.stringify(data)
-	})
-	.then(resp => resp.json())
-	.then(resolve).catch(reject);
-});
+	// Get server version
+	(function update(){
 
-if(location.hostname !== "localhost") {
-	const client = require("raw-loader!../hash");
-	fetch(`/hash`).then(resp => resp.text()).then(async server => {
-		if(server.match(/([0-9]|[a-f]|[A-F]){8}-([0-9]|[a-f]|[A-F]){4}-([0-9]|[a-f]|[A-F]){4}-([0-9]|[a-f]|[A-F]){4}-([0-9]|[a-f]|[A-F]){12}/gmi)) {
-			if(server !== client) {
-				await (await caches.keys()).map(async a => await caches.delete(a));
+		fetch(`/hash?${Date.now()}`).then(resp => resp.text()).then(async server => {
+
+			// Make sure client recieved a hash
+			if(server.match(/([0-9]|[a-f]|[A-F]){8}-([0-9]|[a-f]|[A-F]){4}-([0-9]|[a-f]|[A-F]){4}-([0-9]|[a-f]|[A-F]){4}-([0-9]|[a-f]|[A-F]){12}/gmi)) {
+
+				// Update the client
+				if(server !== client) app.update(server.substr(0, 8));
+
+				// If there is no update available, retry in 60s
+				else setTimeout(update, 60000);
+
 			}
-		}
-	}).catch(e => console.error("Offline", e));
+
+		})
+
+	}())
+
 }
 
 // Get games

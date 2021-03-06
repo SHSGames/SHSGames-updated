@@ -1,5 +1,6 @@
 # react-app
-Create single page applications using PhotonCSS
+Create single page applications using PhotonCSS that are fast as sh!t
+![100% Score in Lighthouse](https://i.ibb.co/Rg6gmVn/Screenshot-2021-02-26-205111.png)
 
 ## Initial set-up
 The following software is installed:
@@ -38,20 +39,7 @@ npm install
 npm install photoncss@latest -D
 ```
 ### Configure your app
-Change the information in `~/my-app/web-app.json` to reflect your app's brand
-```javascript
-{
-	"appName": "Photon PWA",
-	"version": "1.0.0",
-	"appDescription": "Create single page applications using PhotonCSS",
-	"developerName": "Josh Merlino",
-	"developerURL": "https://joshmerlino.github.io",
-	"background": "#fff",
-	"theme_color": "#004ba0",
-	"spa_root": "index.html", // If your deploying to github pages set this to "404.html"
-	"orientation": "portrait",
-}
-```
+Change the information in `~/my-app/src/manifest.json` to reflect your app's PWA manifest
 
 ## Developing
 
@@ -59,9 +47,11 @@ Change the information in `~/my-app/web-app.json` to reflect your app's brand
 1. Make an `api` folder in the projects root.
 2. Add API endpoints in subdirectory's there.
 
-`~/my-app/api/v1/myapi.js`
-```js
-export default (req, res) => new Promise(async function(resolve, reject) {
+`~/my-app/api/v1/myapi.ts`
+```typescript
+import { Request, Response } from "express";
+
+export default (req: Request, res: Response) => new Promise(async function(resolve, reject) {
 	resolve({ data: "hello world!" });
 });
 ```
@@ -99,11 +89,14 @@ export default function MyComponent() {
 ```js
 import React, { Fragment } from "react";
 
+// Export the title of the tab
+export const title = "My Page";
+
 // Export the path of the page to render
 export const route = "/";
 
 // Export view
-export function View() {
+export default function() {
 	return (
 		<Fragment>
 			get started by editing `~/my-app/src/views/Index.js::View`

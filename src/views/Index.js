@@ -6,8 +6,7 @@ import Toolbar from "components/Toolbar";
 // Export the path of the page to render
 export const route = "/";
 
-// Export view
-export function View() {
+export default function() {
 	return (
 		<Fragment>
 
