@@ -6,6 +6,8 @@ import "./styles/main.less";
 import "script-loader!jquery";
 import "photoncss";
 import "./app";
+import Footer from "./components/Footer";
+import Drawer from "./components/Drawer";
 
 // Get right router type for app
 const Router = location.protocol === "file:" ? HashRouter : BrowserRouter;
@@ -58,6 +60,8 @@ function Root() {
 			<main>
 				{ views.map(({ route, View, default: def }, key) => <Route key={key} path={route} exact={true} component={def || View}/> ) }
 			</main>
+			<Footer/>
+			<Drawer/>
 		</Router>
   	);
 

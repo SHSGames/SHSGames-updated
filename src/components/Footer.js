@@ -2,7 +2,7 @@ import React, { Fragment, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Footer, FooterCopyright } from "@photoncss/Footer";
 import { Container, Row, Col } from "@photoncss/Layout";
-import DiscordInvite from "components/DiscordInvite";
+import DiscordInvite from "./DiscordInvite";
 
 export function MoTD() {
 
@@ -24,7 +24,7 @@ export function MoTD() {
 
 export default function Component() {
 	return (
-		<Footer>
+		<Footer variant="legacy dark">
 			<Container>
 				<Row>
 					<Col md={4}>
@@ -33,25 +33,27 @@ export default function Component() {
 					</Col>
 					<Col md={8}>
 						<div style={{ float: "right" }}>
-							<DiscordInvite guild="584437072618717209" palette={Photon.getTheme().theme}/>
+							<DiscordInvite guild="584437072618717209"/>
 						</div>
 					</Col>
 				</Row>
 			</Container>
 			<FooterCopyright>
 				<Container style={{ paddingLeft: 12 }}>
-				
+
 					Copyright © 2019 - { new Date().getFullYear() }
 					{" • "}
-					<a href="//github.com/SHSGames/SHSGames/blob/master/LICENSE" className="link">Liscense</a>
-
-					<br/>
-
 					<a href="//joshmerlino.github.io" className="link">Josh Merlino</a>
 					{" & "}
 					<a href="//th3skeleton.github.io/pshel" className="link">Parker Sheldon</a>
 					{" & "}
 					<a className="link">George Lock</a>
+
+					<br/>
+
+					<a href="//github.com/SHSGames/SHSGames/blob/master/LICENSE" className="link">Liscense</a>
+					{" • "}
+					<span>Games owned by various publishers</span>
 
 				</Container>
 			</FooterCopyright>

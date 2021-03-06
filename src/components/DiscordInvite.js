@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./DiscordInvite.less";
 
-export default function({ palette = "dark", guild = "YPmMwGQ" }) {
+export default function({ palette = "dark", guild = "635938104775278602" }) {
 
     const [ state, setState ] = useState({ success: null });
 
@@ -15,10 +15,25 @@ export default function({ palette = "dark", guild = "YPmMwGQ" }) {
 	});
 
 	// If failed to get state
-	if(state.success === false || state.success === null) return null;
+	if(state.success === false || state.success === null) return (
+		<div className={`DiscordInvite-root palette-${palette}`}>
+			<h5 className="DiscordInvite-title">
+				You received an invite to a server
+			</h5>
+			<div className="DiscordInvite-body">
+	            <div className="DiscordInvite-serverIcon"/>
+	            <div className="DiscordInvite-content">
+	                <h3 className="DiscordInvite-serverName"></h3>
+	                <strong className="DiscordInvite-memberCount">
+	                </strong>
+	            </div>
+				<a className="DiscordInvite-joinLink disabled">Join</a>
+	        </div>
+	    </div>
+	);
 
     return (
-		<div className={`DiscordInvite-root raised-2 palette-${palette}`}>
+		<div className={`DiscordInvite-root palette-${palette}`}>
 	        <h5 className="DiscordInvite-title">
 	            You received an invite to a server
 	        </h5>
