@@ -1,29 +1,31 @@
-import bodyParser from "body-parser";
 import chalk from "chalk";
 import compression from "compression";
 import cors from "cors";
 import express, { Request, Response } from "express";
-import rateLimit from "express-rate-limit";
-import { promises as fs } from "fs";
+import fs from "fs/promises";
 import http from "http";
 import https from "https";
+import path from "path";
 import mysqlPromise from "mysql-promise";
 import mysql from "mysql2";
-import path from "path";
-import url from "url";
 import YAML from "yaml";
+import dotenv from "dotenv";
+
+// Configure environment variables
+dotenv.config();
 
 // Add methods to console
-console.info = (...args) : void => { console.log(chalk.blue("[INFO]"), ...args) };
-console.error = (...args) : void => { console.log(chalk.red("[ERROR]"), ...args) };
-console.warn = (...args) : void => { console.log(chalk.yellow("[WARN]"), ...args) };
-console.success = (...args) : void => { console.log(chalk.green("[SUCCESS]"), ...args) };
+console.info = (...args) : void => { console.log(chalk.blue("[ INFO ] "), ...args); };
+console.error = (...args) : void => { console.log(chalk.red("[ ERROR ]"), ...args); };
+console.warn = (...args) : void => { console.log(chalk.yellow("[ WARN ] "), ...args); };
 
 // Log errors to console instead of killing the application
 process.on("uncaughtException", err => console.error(err));
 
 // Get API function for internal use
-const api = async (endpoint: string, query: object = {}) : Promise<object> => await (await require(`./api/${endpoint}.js`))({ query });
+(global as any).api = async function(endpoint: string, query: object = {}) : Promise<object> {
+	return await (await require(`./api/${endpoint}.js`))({ query });
+};
 
 // Start server
 (async function server(app) {
@@ -31,6 +33,9 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 	// Get config from config.yml
 	const config: any = YAML.parse(await fs.readFile("./config.yml", "utf8"));
 	console.info("Parsed configuration from", chalk.cyan("config.yml"));
+
+	// Load config into global scope
+	(global as any).config = config;
 
 	// If MySQL is used
 	if(config.mysql.use) {
@@ -47,7 +52,7 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 			(global as any).mysql = db;
 
 			// Test connection
-			await db.query(`show tables`)
+			await db.query(`show tables`);
 			console.info("Logged into MySQL as", chalk.cyan(`${config.mysql.user}@${config.mysql.host}`));
 
 		} catch (error) {
@@ -60,23 +65,17 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 
 	}
 
-	// Configure rate limiting
-	const limiter = rateLimit({
-  		windowMs: config["rate-limit"]["window-time"] * 1000,
-  		max: config["rate-limit"]["max-requests"]
-	});
-
 	// API parser middleware
-	async function apiParser(req: Request, res: Response) {
+	async function apiParser(req: Request, res: Response): Promise<void> {
 
 		// Deconstruct request URL
-		const { pathname } = url.parse(req.url);
+		const pathname: string = req.originalUrl.split("?")[0];
 
 		// Start timer
-		const time = Date.now();
+		const time: number = Date.now();
 
 		// Log API request
-		console.info("Received API request", chalk.cyan(pathname));
+		console.info("Received API request", chalk.yellow(req.method), chalk.cyan(pathname));
 
 		// Set timer to make request time out
 		setTimeout(function() {
@@ -86,7 +85,7 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 
 				// Respond with timeout code
 				res.status(408);
-				res.header("Content-Type", 'application/json');
+				res.header("Content-Type", "application/json");
 
         		res.send(JSON.stringify({ success: false, status: `Request Timeout (${config["timeout-time"]}s)` }, null, 4));
 				console.warn("API request to", chalk.cyan(pathname), "timed out after", chalk.cyan(`${Date.now() - time}ms`));
@@ -99,14 +98,14 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 		try {
 
 			// Import endpoint
-			const endpoint: Promise<object> = require(`.${pathname}.js`).default(req, res);
+			const endpoint: Promise<object> = require(`./lib${pathname}.js`).default(req, res);
 
 			// Execute endpoint in context of request
 			endpoint.then((response: object) => {
 
 				// Send OK status
 				res.status(res.statusCode || 200);
-				res.header("Content-Type", 'application/json');
+				res.header("Content-Type", "application/json");
 
 				// Respond to request
         		res.send(JSON.stringify({ success: true, ...response }, null, 4));
@@ -115,7 +114,7 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 
 				// Send error status
 				res.status(res.statusCode || 400);
-				res.header("Content-Type", 'application/json');
+				res.header("Content-Type", "application/json");
 
 				// Send error message
         		res.send(JSON.stringify({ success: false, status: "Request Rejected", error }, null, 4));
@@ -130,18 +129,18 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 		} catch(error) {
 
 			// If module not found
-			if(error.code === "ERR_MODULE_NOT_FOUND" && error.toString().includes(`Cannot find module '${__dirname}${pathname}.js'`)) {
+			if(error.toString().includes(pathname)) {
 
 				// Send 404 error
 				res.status(404);
-				res.header("Content-Type", 'application/json');
+				res.header("Content-Type", "application/json");
         		res.send(JSON.stringify({ success: false, status: "Not Found" }, null, 4));
 
 			} else {
 
 				// Send 500 error
 				res.status(500);
-				res.header("Content-Type", 'application/json');
+				res.header("Content-Type", "application/json");
         		res.send(JSON.stringify({ success: false, status: "Internal Server Error" }, null, 4));
 
 			}
@@ -153,21 +152,21 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 		}
 	}
 
+	// Allow requests from any origin
+	app.use(cors());
+
 	// Use body parser to parse fields
-	app.use(bodyParser.json());
+	app.use(express.json());
 
-	// Enable rate limiting on API
-	if(config["rate-limit"].use) app.use("/api/**", limiter);
-
-	// Listen and pass API calls
-	app.all("/api/**", cors(), apiParser);
+	// Listen and pass api
+	app.use("/api/**", apiParser);
 
 	// If the application is running in development mode
 	if (process.env.NODE_ENV === "dev") {
 
 		// Start HTTP server
 		http.createServer(app).listen(4000);
-		console.info("Development server running on", chalk.cyan(`:4000 (http)`));
+		console.info("Development server running on", chalk.cyan(":4000 (http)"));
 
 	}
 
@@ -210,4 +209,4 @@ const api = async (endpoint: string, query: object = {}) : Promise<object> => aw
 
 	}
 
-}(express()))
+}(express()));

@@ -41,8 +41,8 @@ function Root() {
 				Photon.reload();
 
 				// Get view
-				let view = views.filter(({ route }) => new RegExp(route.replace(/\:\w.*/g, "\\w.*"), "g").test(app.getRoute()));
-					view = view.length > 1 ? view[view[0].route === "/" ? 1:0] : view[0];
+				let view = views.filter(({ route }) => new RegExp(route.replace(/:\w.*/g, "\\w.*"), "g").test(app.getRoute()));
+				view = view.length > 1 ? view[view[0].route === "/" ? 1:0] : view[0];
 
 				// Get title from route
 				const title = view.hasOwnProperty("title") ? `${view.title} • ${APP_MANIFEST.name}` : APP_MANIFEST.name;
@@ -63,7 +63,7 @@ function Root() {
 			<Footer/>
 			<Drawer/>
 		</Router>
-  	);
+	);
 
 }
 
@@ -105,9 +105,9 @@ if(PRODUCTION) {
 
 			}
 
-		})
+		});
 
-	}())
+	}());
 
 }
 
